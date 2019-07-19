@@ -1,0 +1,101 @@
+{
+
+"variables": {
+  "get_domain": "saucelabs03.test",
+  "get_hostname": "ubuntu03",
+  "disk_size": "8192",
+  "guest_os_type": "Ubuntu_64",
+  "http_directory": "http",
+  "iso_checksum_type": "file",
+  "iso_checksum_url": "http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/SHA256SUMS",
+  "iso_urls": "http://cdimage.ubuntu.com/ubuntu/releases/bionic/release/ubuntu-18.04.2-server-amd64.iso",
+  "ssh_username": "vagrant",
+  "ssh_password": "vagrant",
+  "sudoer_name": "vagrant",
+  "vm_name": "packer-ubuntu-18.04.2-amd64-qemu",
+  "output_directory": "output-virtualbox-qemu",
+  "output_vg_box": "ubuntu-18.04.2-qemu.box"
+},
+  "sensitive-variables": ["ssh_username", "ssh_password"],
+
+
+
+    "builders": [
+        {
+            "type": "qemu",
+            "accelerator": "kvm",
+            "boot_command": [
+                "<esc><wait>",
+                "<esc><wait>",
+                "<enter><wait>",
+                "/install/vmlinuz<wait>",
+                " auto<wait>",
+                " console-setup/ask_detect=false<wait>",
+                " console-setup/layoutcode=us<wait>",
+                " console-setup/modelcode=pc105<wait>",
+                " debconf/frontend=noninteractive<wait>",
+                " debian-installer=en_US<wait>",
+                " fb=false<wait>",
+                " initrd=/install/initrd.gz<wait>",
+                " kbd-chooser/method=us<wait>",
+                " keyboard-configuration/layout=USA<wait>",
+                " keyboard-configuration/variant=USA<wait>",
+                " locale=en_US<wait>",
+                " netcfg/get_domain={{user `get_domain`}}<wait>",
+                " netcfg/get_hostname={{user `get_hostname`}}<wait>",
+                " grub-installer/bootdev=/dev/vda<wait>",
+                " noapic<wait>",
+                " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_qemu.cfg<wait>",
+                " -- <wait>",
+                "<enter><wait>"
+            ],
+            "boot_wait": "10s",
+            "disk_size": "{{user `disk_size`}}",
+            "headless": false,
+            "http_directory": "{{user `http_directory`}}",
+            "output_directory": "{{user `output_directory`}}",
+            "ssh_username": "{{user `ssh_username`}}",
+            "ssh_password": "{{user `ssh_password`}}",
+            "ssh_port": 22,
+            "ssh_wait_timeout": "10000s",
+            "iso_urls": "{{user `iso_urls`}}",
+            "iso_checksum_type": "{{user `iso_checksum_type`}}",
+            "iso_checksum_url": "{{user `iso_checksum_url`}}",
+            "shutdown_command": "echo '{{user `sudoer_name`}}'|sudo -S shutdown -P now",
+            "vm_name": "{{user `vm_name`}}",
+            "net_device": "virtio-net",
+            "disk_interface": "virtio",
+            "format": "qcow2",
+            "qemu_binary": "qemu-system-x86_64",
+            "qemuargs": [
+              [ "-m", "4092M" ],
+              [ "-smp", "cpus=2,maxcpus=2,cores=2" ]
+            ]
+        }
+    ],
+
+
+
+
+
+    "provisioners": [{
+      "type": "shell",
+      "execute_command": "echo '{{user `sudoer_name`}}' | {{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": [
+        "scripts/init.sh",
+        "scripts/update.sh",
+        "scripts/vnc.sh",
+        "scripts/ufw.sh",
+        "scripts/postfix.sh",
+        "scripts/check_list.sh",
+        "scripts/cleanup.sh"
+      ]
+    }],
+
+  "post-processors": [{
+    "type": "vagrant",
+    "output": "{{user `output_vg_box`}}"
+  }]
+
+
+  }

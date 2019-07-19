@@ -1,0 +1,4 @@
+name: check_list
+title: Check list for target host
+summary: An InSpec Profile to check server status
+version: 0.1.0

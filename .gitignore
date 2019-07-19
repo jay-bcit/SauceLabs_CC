@@ -1,0 +1,6 @@
+.git/
+*.docx
+*.box
+*/output-virtualbox-*/
+*/packer_cache/
+*/.vagrant/
